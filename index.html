@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sewie — Encrypted Vault</title>
+  <style>
+    :root {
+      --bg: #0f0f12;
+      --surface: #1a1a21;
+      --surface2: #24242e;
+      --border: #2e2e3a;
+      --text: #e8e8ed;
+      --muted: #8b8b9a;
+      --accent: #7c5cff;
+      --accent-hover: #9478ff;
+      --success: #34d399;
+      --danger: #f87171;
+      --radius: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 40px 20px 80px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .logo {
+      font-size: 3.2rem;
+      font-weight: 800;
+      letter-spacing: -1.5px;
+      background: linear-gradient(135deg, #a78bfa, #7c5cff, #60a5fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+    }
+
+    .greeting {
+      font-size: 1.35rem;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .greeting strong {
+      color: var(--text);
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      margin-bottom: 24px;
+    }
+
+    .card h2 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card p.desc {
+      color: var(--muted);
+      font-size: 0.92rem;
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    input[type="password"],
+    input[type="text"] {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      color: var(--text);
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    input[type="password"]:focus,
+    input[type="text"]:focus {
+      border-color: var(--accent);
+    }
+
+    .file-drop {
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      padding: 32px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: var(--surface2);
+      margin-bottom: 16px;
+    }
+
+    .file-drop:hover,
+    .file-drop.dragover {
+      border-color: var(--accent);
+      background: rgba(124, 92, 255, 0.08);
+    }
+
+    .file-drop input {
+      display: none;
+    }
+
+    .file-drop .icon {
+      font-size: 2rem;
+      margin-bottom: 8px;
+    }
+
+    .file-drop p {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .file-drop strong {
+      color: var(--text);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 22px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+      width: 100%;
+    }
+
+    .btn:hover {
+      background: var(--accent-hover);
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .btn-secondary:hover {
+      background: var(--border);
+    }
+
+    .file-list {
+      margin-top: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .file-item {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .file-info {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .file-name {
+      font-weight: 500;
+      font-size: 0.95rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .file-meta {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .file-actions {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .icon-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 8px;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .icon-btn:hover {
+      background: var(--border);
+    }
+
+    .status {
+      margin-top: 14px;
+      font-size: 0.9rem;
+      padding: 10px 14px;
+      border-radius: 8px;
+      display: none;
+    }
+
+    .status.show {
+      display: block;
+    }
+
+    .status.success {
+      background: rgba(52, 211, 153, 0.12);
+      color: var(--success);
+      border: 1px solid rgba(52, 211, 153, 0.25);
+    }
+
+    .status.error {
+      background: rgba(248, 113, 113, 0.12);
+      color: var(--danger);
+      border: 1px solid rgba(248, 113, 113, 0.25);
+    }
+
+    .status.info {
+      background: rgba(124, 92, 255, 0.12);
+      color: #a78bfa;
+      border: 1px solid rgba(124, 92, 255, 0.25);
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+      background: var(--surface);
+      padding: 6px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: var(--muted);
+      transition: all 0.15s;
+    }
+
+    .tab.active {
+      background: var(--accent);
+      color: white;
+    }
+
+    .panel {
+      display: none;
+    }
+
+    .panel.active {
+      display: block;
+    }
+
+    .password-row {
+      margin-bottom: 16px;
+    }
+
+    .hint {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">sewie</div>
+      <p class="greeting">Hi, I'm <strong>sewie</strong> 👋<br>Your private encrypted vault for photos & files.</p>
+    </header>
+
+    <div class="tabs">
+      <div class="tab active" data-tab="encrypt">Encrypt</div>
+      <div class="tab" data-tab="decrypt">Decrypt</div>
+    </div>
+
+    <!-- ENCRYPT PANEL -->
+    <div class="panel active" id="panel-encrypt">
+      <div class="card">
+        <h2>🔒 Encrypt Files</h2>
+        <p class="desc">Drop photos or any files. They get encrypted with your password before anything is saved. Nothing leaves your device unencrypted.</p>
+
+        <div class="password-row">
+          <label for="enc-password">Encryption Password</label>
+          <input type="password" id="enc-password" placeholder="Choose a strong password" autocomplete="new-password" />
+          <p class="hint">Remember this password — you’ll need it to decrypt later. It never leaves your browser.</p>
+        </div>
+
+        <div class="file-drop" id="enc-drop">
+          <div class="icon">📁</div>
+          <p><strong>Click or drag files here</strong><br>Photos, documents, anything</p>
+          <input type="file" id="enc-files" multiple accept="*/*" />
+        </div>
+
+        <button class="btn" id="enc-btn" disabled>Encrypt & Download</button>
+        <div class="status" id="enc-status"></div>
+
+        <div class="file-list" id="enc-list"></div>
+      </div>
+    </div>
+
+    <!-- DECRYPT PANEL -->
+    <div class="panel" id="panel-decrypt">
+      <div class="card">
+        <h2>🔓 Decrypt Files</h2>
+        <p class="desc">Upload a .sewie encrypted file and enter the password used to encrypt it.</p>
+
+        <div class="password-row">
+          <label for="dec-password">Decryption Password</label>
+          <input type="password" id="dec-password" placeholder="Enter the password" autocomplete="current-password" />
+        </div>
+
+        <div class="file-drop" id="dec-drop">
+          <div class="icon">🔑</div>
+          <p><strong>Click or drag .sewie file here</strong></p>
+          <input type="file" id="dec-files" accept=".sewie,application/octet-stream" />
+        </div>
+
+        <button class="btn" id="dec-btn" disabled>Decrypt & Download</button>
+        <div class="status" id="dec-status"></div>
+      </div>
+    </div>
+
+    <footer>
+      sewie • client-side only • your files never leave your browser unencrypted
+    </footer>
+  </div>
+
+  <script>
+    // ============ Crypto helpers (Web Crypto API) ============
+    const ITERATIONS = 250000;
+    const SALT_LENGTH = 16;
+    const IV_LENGTH = 12;
+
+    async function deriveKey(password, salt) {
+      const enc = new TextEncoder();
+      const keyMaterial = await crypto.subtle.importKey(
+        "raw",
+        enc.encode(password),
+        "PBKDF2",
+        false,
+        ["deriveKey"]
+      );
+      return crypto.subtle.deriveKey(
+        {
+          name: "PBKDF2",
+          salt,
+          iterations: ITERATIONS,
+          hash: "SHA-256"
+        },
+        keyMaterial,
+        { name: "AES-GCM", length: 256 },
+        false,
+        ["encrypt", "decrypt"]
+      );
+    }
+
+    async function encryptFile(file, password) {
+      const salt = crypto.getRandomValues(new Uint8Array(SALT_LENGTH));
+      const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH));
+      const key = await deriveKey(password, salt);
+
+      const fileBuffer = await file.arrayBuffer();
+      const encrypted = await crypto.subtle.encrypt(
+        { name: "AES-GCM", iv },
+        key,
+        fileBuffer
+      );
+
+      // Format: magic (5) + version (1) + salt (16) + iv (12) + original name length (2) + name + ciphertext
+      const nameBytes = new TextEncoder().encode(file.name);
+      const nameLen = nameBytes.length;
+      if (nameLen > 65535) throw new Error("Filename too long");
+
+      const header = new Uint8Array(5 + 1 + SALT_LENGTH + IV_LENGTH + 2 + nameLen);
+      // magic "SEWIE"
+      header.set([0x53, 0x45, 0x57, 0x49, 0x45], 0);
+      header[5] = 1; // version
+      header.set(salt, 6);
+      header.set(iv, 6 + SALT_LENGTH);
+      header[6 + SALT_LENGTH + IV_LENGTH] = (nameLen >> 8) & 0xff;
+      header[6 + SALT_LENGTH + IV_LENGTH + 1] = nameLen & 0xff;
+      header.set(nameBytes, 6 + SALT_LENGTH + IV_LENGTH + 2);
+
+      const result = new Uint8Array(header.length + encrypted.byteLength);
+      result.set(header, 0);
+      result.set(new Uint8Array(encrypted), header.length);
+
+      return new Blob([result], { type: "application/octet-stream" });
+    }
+
+    async function decryptFile(blob, password) {
+      const buffer = await blob.arrayBuffer();
+      const data = new Uint8Array(buffer);
+
+      // Check magic
+      if (data[0] !== 0x53 || data[1] !== 0x45 || data[2] !== 0x57 || data[3] !== 0x49 || data[4] !== 0x45) {
+        throw new Error("Not a valid .sewie file");
+      }
+      const version = data[5];
+      if (version !== 1) throw new Error("Unsupported file version");
+
+      const salt = data.slice(6, 6 + SALT_LENGTH);
+      const iv = data.slice(6 + SALT_LENGTH, 6 + SALT_LENGTH + IV_LENGTH);
+      const nameLen = (data[6 + SALT_LENGTH + IV_LENGTH] << 8) | data[6 + SALT_LENGTH + IV_LENGTH + 1];
+      const nameStart = 6 + SALT_LENGTH + IV_LENGTH + 2;
+      const nameBytes = data.slice(nameStart, nameStart + nameLen);
+      const originalName = new TextDecoder().decode(nameBytes);
+      const ciphertext = data.slice(nameStart + nameLen);
+
+      const key = await deriveKey(password, salt);
+      const decrypted = await crypto.subtle.decrypt(
+        { name: "AES-GCM", iv },
+        key,
+        ciphertext
+      );
+
+      return { blob: new Blob([decrypted]), name: originalName };
+    }
+
+    // ============ UI helpers ============
+    function showStatus(el, msg, type) {
+      el.textContent = msg;
+      el.className = "status show " + type;
+    }
+
+    function hideStatus(el) {
+      el.className = "status";
+    }
+
+    function formatSize(bytes) {
+      if (bytes < 1024) return bytes + " B";
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+      return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+    }
+
+    function downloadBlob(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    // ============ Tabs ============
+    document.querySelectorAll(".tab").forEach(tab => {
+      tab.addEventListener("click", () => {
+        document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+        document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+        tab.classList.add("active");
+        document.getElementById("panel-" + tab.dataset.tab).classList.add("active");
+      });
+    });
+
+    // ============ Encrypt side ============
+    const encDrop = document.getElementById("enc-drop");
+    const encInput = document.getElementById("enc-files");
+    const encBtn = document.getElementById("enc-btn");
+    const encPassword = document.getElementById("enc-password");
+    const encStatus = document.getElementById("enc-status");
+    const encList = document.getElementById("enc-list");
+
+    let selectedFiles = [];
+
+    function updateEncButton() {
+      encBtn.disabled = selectedFiles.length === 0 || !encPassword.value;
+    }
+
+    encPassword.addEventListener("input", updateEncButton);
+
+    function renderFileList() {
+      encList.innerHTML = "";
+      selectedFiles.forEach((file, i) => {
+        const item = document.createElement("div");
+        item.className = "file-item";
+        item.innerHTML = `
+          <div class="file-info">
+            <div class="file-name">${file.name}</div>
+            <div class="file-meta">${formatSize(file.size)} • ${file.type || "unknown type"}</div>
+          </div>
+          <div class="file-actions">
+            <button class="icon-btn" title="Remove" data-index="${i}">✕</button>
+          </div>
+        `;
+        encList.appendChild(item);
+      });
+
+      encList.querySelectorAll(".icon-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          selectedFiles.splice(+btn.dataset.index, 1);
+          renderFileList();
+          updateEncButton();
+        });
+      });
+    }
+
+    function handleFiles(files) {
+      selectedFiles = [...selectedFiles, ...Array.from(files)];
+      renderFileList();
+      updateEncButton();
+      hideStatus(encStatus);
+    }
+
+    encDrop.addEventListener("click", () => encInput.click());
+    encInput.addEventListener("change", e => {
+      if (e.target.files.length) handleFiles(e.target.files);
+      e.target.value = "";
+    });
+
+    ["dragenter", "dragover"].forEach(evt => {
+      encDrop.addEventListener(evt, e => {
+        e.preventDefault();
+        encDrop.classList.add("dragover");
+      });
+    });
+    ["dragleave", "drop"].forEach(evt => {
+      encDrop.addEventListener(evt, e => {
+        e.preventDefault();
+        encDrop.classList.remove("dragover");
+      });
+    });
+    encDrop.addEventListener("drop", e => {
+      if (e.dataTransfer.files.length) handleFiles(e.dataTransfer.files);
+    });
+
+    encBtn.addEventListener("click", async () => {
+      const password = encPassword.value;
+      if (!password || selectedFiles.length === 0) return;
+
+      encBtn.disabled = true;
+      showStatus(encStatus, "Encrypting… this may take a moment for large files", "info");
+
+      try {
+        for (const file of selectedFiles) {
+          const encryptedBlob = await encryptFile(file, password);
+          const outName = file.name + ".sewie";
+          downloadBlob(encryptedBlob, outName);
+        }
+        showStatus(encStatus, `Done! ${selectedFiles.length} file(s) encrypted and downloaded as .sewie`, "success");
+        selectedFiles = [];
+        renderFileList();
+        updateEncButton();
+      } catch (err) {
+        console.error(err);
+        showStatus(encStatus, "Encryption failed: " + err.message, "error");
+        updateEncButton();
+      }
+    });
+
+    // ============ Decrypt side ============
+    const decDrop = document.getElementById("dec-drop");
+    const decInput = document.getElementById("dec-files");
+    const decBtn = document.getElementById("dec-btn");
+    const decPassword = document.getElementById("dec-password");
+    const decStatus = document.getElementById("dec-status");
+
+    let selectedEncFile = null;
+
+    function updateDecButton() {
+      decBtn.disabled = !selectedEncFile || !decPassword.value;
+    }
+
+    decPassword.addEventListener("input", updateDecButton);
+
+    function handleDecFile(file) {
+      selectedEncFile = file;
+      decDrop.querySelector("p").innerHTML = `<strong>${file.name}</strong><br>${formatSize(file.size)}`;
+      updateDecButton();
+      hideStatus(decStatus);
+    }
+
+    decDrop.addEventListener("click", () => decInput.click());
+    decInput.addEventListener("change", e => {
+      if (e.target.files.length) handleDecFile(e.target.files[0]);
+      e.target.value = "";
+    });
+
+    ["dragenter", "dragover"].forEach(evt => {
+      decDrop.addEventListener(evt, e => {
+        e.preventDefault();
+        decDrop.classList.add("dragover");
+      });
+    });
+    ["dragleave", "drop"].forEach(evt => {
+      decDrop.addEventListener(evt, e => {
+        e.preventDefault();
+        decDrop.classList.remove("dragover");
+      });
+    });
+    decDrop.addEventListener("drop", e => {
+      if (e.dataTransfer.files.length) handleDecFile(e.dataTransfer.files[0]);
+    });
+
+    decBtn.addEventListener("click", async () => {
+      const password = decPassword.value;
+      if (!password || !selectedEncFile) return;
+
+      decBtn.disabled = true;
+      showStatus(decStatus, "Decrypting…", "info");
+
+      try {
+        const { blob, name } = await decryptFile(selectedEncFile, password);
+        downloadBlob(blob, name);
+        showStatus(decStatus, `Success! Downloaded as “${name}”`, "success");
+      } catch (err) {
+        console.error(err);
+        let msg = err.message;
+        if (msg.includes("OperationError") || msg.includes("decrypt")) {
+          msg = "Wrong password or corrupted file";
+        }
+        showStatus(decStatus, "Decryption failed: " + msg, "error");
+      }
+      updateDecButton();
+    });
+  </script>
+</body>
+</html>
